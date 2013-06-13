@@ -1,0 +1,101 @@
+<!--!DOCTYPE html-->
+<html lang='en'>
+	<head>
+		<title>Data Collector</title>
+		<script type='text/javascript' src='http://ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js'></script>		
+		
+		<link rel="stylesheet" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css">
+		<script src="http://code.jquery.com/jquery-1.8.3.js"></script>
+		<script src="http://code.jquery.com/ui/1.9.2/jquery-ui.js"></script>
+		
+		<script language="javascript" type="text/javascript" src="3rdParty/flot/jquery.js"></script>
+		<script language="javascript" type="text/javascript" src="3rdParty/flot/jquery.flot.js"></script>
+		
+		<script src='/socket.io/socket.io.js'></script>
+		<script>
+		$(document).ready(function(){
+			var socket = io.connect();
+			var val = 10;
+			var temp ;
+			
+			var totalPoints = 300;
+			var res = [];
+			function getInitData() {
+				// zip the generated y values with the x values
+				for (var i = 0; i < totalPoints; ++i){
+					res.push([i, 0]);
+				}
+				return res;
+			}
+
+			// Options for Flot plot
+			var options = {
+				series: { shadowSize: 0 }, // drawing is faster without shadows
+				yaxis: { min: 0, max: 50, color: "#bbbb00" },
+				xaxis: { show: false },				
+			};
+			var plot = $.plot($("#placeholder"), [ getInitData() ], options);
+			
+			socket.on('welcome', function(data) {
+				// Convert value to integer
+				//val = ((parseInt(data.salutation) / 1023)*100)*10;
+				val = data.salutation ;
+				// Push new value to Flot Plot
+				res.push([totalPoints, val]); // push on the end side
+				res.shift(); // remove first value to maintain 300 points
+				// reinitialize the x axis data points to 0 to 299.
+				for (i=0;i<totalPoints;i++) { res[i][0] = i; }
+				// Redraw the plot
+				plot.setData([ res ]);
+				plot.draw();
+				
+				$('#temperature').text("Current Temperature: :" + val );
+								
+			});
+		});
+		</script>
+		<style type='text/css'>
+			body {
+				background-color: #777;
+				color: fff;
+				font-size: 14px;
+				margin: 0;
+				padding: 0;
+				font-family: Helvetica, Arial, Sans-Serif;
+			}
+			#log {
+				margin-bottom: 100px;
+				width: 100%;
+			}
+			#log ul {
+				padding: 0;
+				margin: 0;
+			}
+			#log ul li {
+				list-style-type: none;
+			}
+			#console {
+				background-color: black;
+				color: white;
+				border-top:1px solid white;
+				position: fixed;
+				bottom: 0;
+				width: 100%;
+				font-size: 18px;
+			}
+			#console input {
+				width: 100%;
+				background-color: inherit;
+				color: inherit;
+				font-size: inherit;
+			}
+		</style>
+	</head>
+	<body>		
+		<h1>Temperature Monitor</h1>		
+		<!--div id="progressbar" style="width:600px;height:50px;color:#FFFFFF"></div-->		
+		<div id="placeholder" style="width:600px;height:300px;"></div>
+		<div id='temperature'><p>Temperature</p></div>
+		<!--div id='console'>Current Temperature:</div-->	
+	</body>
+</html>
