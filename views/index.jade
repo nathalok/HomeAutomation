@@ -1,0 +1,47 @@
+doctype 5
+html
+  head
+    title= title
+    script(src='http://ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js')	    
+    script(type='text/javascript', src='/javascripts/flot/jquery.js')
+    script(type='text/javascript', src='/javascripts/flot/jquery.flot.js') 	  	
+    script(type='text/javascript', src='./socket.io/socket.io.js')	
+    script
+      $(document).ready(function(){	
+        var socket = io.connect();
+        var val = 10;
+        var temp;
+        var totalPoints = 300;
+        var res = [];      
+        function getInitData() {// zip the generated y values with the x values
+          for (var i = 0; i < totalPoints; ++i){
+            res.push([i, 0]);        
+          }
+          return res;        
+        }      
+        // Options for Flot plot        
+        var options = {        
+            series: { shadowSize: 0 }, // drawing is faster without shadows        
+            yaxis: { min: 0, max: 50, color: "#bbbb00" },            
+            xaxis: { show: false },   
+        };  
+        var plot = $.plot($("#placeholder"), [ getInitData() ], options);        
+        socket.on('welcome', function(data) {  
+          val = data.salutation ;
+          res.push([totalPoints, val]); // push on the end side
+          res.shift(); // remove first value to maintain 300 points
+          for (i=0;i<totalPoints;i++) { res[i][0] = i; }
+          plot.setData([ res ]);
+          plot.draw(); 
+          $('#temperature').text("Current Temperature: :" + val );          
+        });        
+      });
+    link(rel='stylesheet', href='/stylesheets/style.css')
+  body
+    h1= title
+    p Welcome to #{title}
+    //#placeholder(style='width: 600px; height: 300px;');
+    #placeholder
+    //p graph here
+    #temperature
+    p temperature val
