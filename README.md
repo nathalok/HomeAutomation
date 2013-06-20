@@ -7,4 +7,8 @@ Its a very basic node.js based application which reads the data from Arduino boa
 node application uses serialport2 module to read the data from the serial port. The realtime temperature data is displayed in 
 a flot chart using websockets.
 
+To run the web app, type the following in command prompt
+>node serialFlot.js
+
+
 
